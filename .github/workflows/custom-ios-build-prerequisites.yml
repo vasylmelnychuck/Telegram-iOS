@@ -56,7 +56,7 @@ jobs:
               "enable_icloud": False,
           })
           output = Path("build-system/custom-development-configuration.json")
-          output.write_text(json.dumps(template, indent=2) + "\\n")
+          output.write_text(json.dumps(template, indent=2) + "\n")
           print("Custom development configuration generated successfully (not uploaded).")
           print("Next prerequisite: compatible macOS/Xcode runner and valid device signing.")
           PY
