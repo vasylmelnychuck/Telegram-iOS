@@ -2741,6 +2741,18 @@ private func extractAccountManagerState(records: AccountRecordsView<TelegramAcco
                 isVideo = true
             }
             
+            // SiriKit can continue an outgoing call with only the handle supplied by
+            // the Intents extension, without retaining the original interaction.
+            // Handle that handoff before falling back to the interaction's contacts.
+            if startCallContacts == nil,
+               userActivity.activityType == NSStringFromClass(INStartCallIntent.self),
+               let handle = userActivity.userInfo?["handle"] as? String,
+               handle.hasPrefix("TGCA"),
+               let peerIdValue = Int64(handle.dropFirst(4)) {
+                self.startCallWhenReady(accountId: nil, peerId: PeerId(peerIdValue), isVideo: false)
+                return true
+            }
+
             if let startCallContacts = startCallContacts {
                 let startCall: (PeerId) -> Void = { peerId in
                     self.startCallWhenReady(accountId: nil, peerId: peerId, isVideo: isVideo)
