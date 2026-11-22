@@ -1,0 +1,38 @@
+name: Call history redial patch checks
+
+on:
+  push:
+    branches:
+      - fix/ios-call-history-redial-current
+  pull_request:
+    paths:
+      - 'submodules/TelegramUI/Sources/AppDelegate.swift'
+      - '.github/workflows/call-history-redial-checks.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  source-check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate SiriKit handoff source
+        shell: python
+        run: |
+          from pathlib import Path
+
+          path = Path("submodules/TelegramUI/Sources/AppDelegate.swift")
+          source = path.read_text()
+          expected = (
+              'userActivity.activityType == NSStringFromClass(INStartCallIntent.self)',
+              'userActivity.userInfo?["handle"] as? String',
+              'handle.hasPrefix("TGCA")',
+              'let peerIdValue = Int64(handle.dropFirst(4))',
+              'self.startCallWhenReady(accountId: nil, peerId: PeerId(peerIdValue), isVideo: false)',
+          )
+          for snippet in expected:
+              assert snippet in source, f"Missing SiriKit handoff code: {snippet}"
+          assert source.index(expected[0]) < source.index("if let startCallContacts = startCallContacts {")
+          print("Source checks passed. This is not an iOS compile or device test.")
