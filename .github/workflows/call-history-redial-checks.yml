@@ -19,8 +19,9 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Validate SiriKit handoff source
-        shell: python
+        shell: bash
         run: |
+          python3 - <<'PY'
           from pathlib import Path
 
           path = Path("submodules/TelegramUI/Sources/AppDelegate.swift")
@@ -36,3 +37,4 @@ jobs:
               assert snippet in source, f"Missing SiriKit handoff code: {snippet}"
           assert source.index(expected[0]) < source.index("if let startCallContacts = startCallContacts {")
           print("Source checks passed. This is not an iOS compile or device test.")
+          PY
